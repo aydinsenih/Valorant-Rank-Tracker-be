@@ -7,7 +7,7 @@ const cookieJar = new tough.CookieJar();
 axios.defaults.withCredentials = true;
 
 module.exports = {
-  get,
+  findUserInfo,
 };
 
 function auth(username, password) {
@@ -142,7 +142,7 @@ function getMMR(user_token, entitlements_token, sub) {
     });
 }
 
-function get(username, password) {
+function findUserInfo(username, password) {
   return auth(username, password).then((response) => {
     return { data: response };
   });
