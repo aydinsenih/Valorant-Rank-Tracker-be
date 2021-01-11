@@ -3,7 +3,7 @@ const axiosCookieJarSupport = require("axios-cookiejar-support").default;
 const tough = require("tough-cookie");
 
 axiosCookieJarSupport(axios);
-const cookieJar = new tough.CookieJar();
+let cookieJar = new tough.CookieJar();
 axios.defaults.withCredentials = true;
 
 module.exports = {
@@ -36,7 +36,7 @@ function auth(username, password) {
       return authWithCredentials(username, password);
     })
     .catch(function (error) {
-      console.log(error);
+      throw new Error(error);
     });
 }
 
@@ -66,9 +66,7 @@ function authWithCredentials(username, password) {
       return entitlementsToken(user_token[1]);
     })
     .catch(function (error) {
-      return {
-        error: { message: "username or password incorrect" },
-      };
+      throw new Error("username or password incorrect.");
     });
 }
 
@@ -92,7 +90,9 @@ function entitlementsToken(user_token) {
       return userinfo(user_token, response.data.entitlements_token);
     })
     .catch(function (error) {
-      console.log(error);
+      throw new Error({
+        error: { message: "entitlements token fetch error", err: error },
+      });
     });
 }
 
@@ -113,10 +113,18 @@ function userinfo(user_token, entitlements_token) {
 
   return axios(config)
     .then(function (response) {
-      return getMMR(user_token, entitlements_token, response.data.sub);
+      return {
+        user_token: user_token,
+        entitlements_token: entitlements_token,
+        sub: response.data.sub,
+        game_name: response.data.acct.game_name,
+        tag_line: response.data.acct.tag_line,
+      };
     })
     .catch(function (error) {
-      console.log(error);
+      throw new Error({
+        error: { message: "user info fetch error", err: error },
+      });
     });
 }
 
@@ -138,12 +146,17 @@ function getMMR(user_token, entitlements_token, sub) {
       return response.data;
     })
     .catch(function (error) {
-      console.log(error);
+      //console.log(error);
     });
 }
 
-function findUserInfo(username, password) {
-  return auth(username, password).then((response) => {
-    return { data: response };
-  });
+function findUserInfo(username, password, next) {
+  cookieJar = new tough.CookieJar();
+  return auth(username, password)
+    .then((response) => {
+      return { response };
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
 }
