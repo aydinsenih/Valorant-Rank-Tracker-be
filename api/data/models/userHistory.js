@@ -4,11 +4,13 @@ module.exports = {
   findUserHistory,
 };
 
-function getMMR(user_token, entitlements_token, sub) {
+function getMMR(user_token, entitlements_token, sub, region) {
   var config = {
     method: "get",
     url:
-      "https://pd.NA.a.pvp.net/mmr/v1/players/" +
+      "https://pd." +
+      region +
+      ".a.pvp.net/mmr/v1/players/" +
       sub +
       "/competitiveupdates?startIndex=0&endIndex=20",
     headers: {
@@ -26,8 +28,8 @@ function getMMR(user_token, entitlements_token, sub) {
     });
 }
 
-function findUserHistory(user_token, entitlements_token, sub) {
-  return getMMR(user_token, entitlements_token, sub)
+function findUserHistory(user_token, entitlements_token, sub, region) {
+  return getMMR(user_token, entitlements_token, sub, region)
     .then((response) => {
       return { data: response };
     })
